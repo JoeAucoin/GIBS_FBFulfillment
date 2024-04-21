@@ -1,0 +1,89 @@
+﻿/************************************************************/
+/*****              SqlDataProvider                     *****/
+/*****                                                  *****/
+/*****                                                  *****/
+/***** Note: To manually execute this script you must   *****/
+/*****       perform a search and replace operation     *****/
+/*****       for {databaseOwner} and {objectQualifier}  *****/
+/*****                                                  *****/
+/************************************************************/
+
+
+
+
+/****** Object:  StoredProcedure [dbo].[GIBS_FBFulfillment_GetOrdersByStatusCode]    Script Date: 4/21/2024 6:56:58 AM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GIBS_FBFulfillment_GetOrdersByStatusCode]') AND type in (N'P', N'PC'))
+DROP PROCEDURE [dbo].[GIBS_FBFulfillment_GetOrdersByStatusCode]
+GO
+
+/****** Object:  StoredProcedure [dbo].[GIBS_FBFulfillment_GetOrdersByStatusCode]    Script Date: 4/21/2024 6:56:58 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+-- =============================================
+-- Author:		Joseph Aucoin
+-- Create date: 04/04/2024
+-- Description:	Food Pantry Client Order List
+-- =============================================
+CREATE PROCEDURE [dbo].[GIBS_FBFulfillment_GetOrdersByStatusCode]
+	-- Add the parameters for the stored procedure 
+@OrderStatusCode int,
+@VisiteDate date
+AS
+BEGIN
+
+declare @current_utc_offset int;
+
+IF  ServerProperty('EngineEdition') >= 5
+Begin
+set @current_utc_offset = (select  convert(int, left(current_utc_offset,3)) AS current_utc_offset from sys.time_zone_info Where Name = 'US Eastern Standard Time')
+End
+--set @current_utc_offset = (select  current_utc_offset  from sys.time_zone_info Where Name = 'US Eastern Standard Time')
+
+if(@current_utc_offset is null)
+begin
+	set @current_utc_offset = 0;
+end
+
+if(@OrderStatusCode= -1 or @OrderStatusCode is null)
+begin
+	set @OrderStatusCode = null;
+end
+
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+	SELECT      GIBS_FBClients.ClientID,  GIBS_FBClients.ClientFirstName + ' ' +  GIBS_FBClients.ClientLastName AS ClientName, coalesce(GIBS_FBClients.ClientLanguage, '') AS ClientLanguage, 
+			GIBS_FBClientsVisits.VisitID, GIBS_FBClientsVisits.VisitDate, GIBS_FBClientsVisits.VisitNumBags, 
+			 coalesce(GIBS_FBClientsVisits.OrderStatusCode, 0) AS OrderStatusCode , 
+			
+			 dateadd(hour, @current_utc_offset, GIBS_FBClientsVisits.CreatedOnDate)	 AS CreatedOnDate
+			 ,
+			 CASE
+  WHEN GIBS_FBClientsVisits.OrderStatusCode = 2 THEN 1
+  WHEN GIBS_FBClientsVisits.OrderStatusCode != 2 THEN 0
+ END AS IsEnabled,
+  CASE
+  WHEN GIBS_FBClientsVisits.OrderStatusCode = 0 THEN 1
+  WHEN GIBS_FBClientsVisits.OrderStatusCode != 0 THEN 0
+ END AS IsPaperOrder
+			
+FROM            GIBS_FBClients INNER JOIN
+                         GIBS_FBClientsVisits ON GIBS_FBClients.ClientID = GIBS_FBClientsVisits.ClientID
+
+						WHERE  (@OrderStatusCode is null or OrderStatusCode = @OrderStatusCode) AND
+						GIBS_FBClientsVisits.VisitDate = @VisiteDate
+						--and  (@OrderStatusCode is null or OrderStatusCode = @OrderStatusCode)
+
+						ORDER By GIBS_FBClientsVisits.VisitID desc
+
+	
+END
+GO
+
+
