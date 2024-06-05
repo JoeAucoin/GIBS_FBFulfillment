@@ -12,7 +12,10 @@
 
 using DotNetNuke.Entities.Modules;
 using DotNetNuke.Services.Exceptions;
+using DotNetNuke.Services.Localization;
 using System;
+using System.Collections;
+using System.Web.UI.WebControls;
 
 namespace GIBS.Modules.GIBS_FBFulfillment
 {
@@ -51,7 +54,34 @@ namespace GIBS.Modules.GIBS_FBFulfillment
             {
                 if (Page.IsPostBack == false)
                 {
+                    BindModules();
+
                     //Check for existing settings and use those on this page
+                    if (TwilioAccountSid != null)
+                    {
+                        txtTwilioAccountSid.Text = TwilioAccountSid;
+                    }
+
+                    if (TwilioAuthToken != null)
+                    {
+                        txtTwilioAuthToken.Text = TwilioAuthToken;
+                    }
+
+                    if (TwilioPhoneNumber != null)
+                    {
+                        txtTwilioPhoneNumber.Text = TwilioPhoneNumber;
+                    }
+                    if (ProcessOrderLayOut != null)
+                    {
+                        ddlProcessOrderLayOut.SelectedValue = ProcessOrderLayOut;
+                       
+                    }
+                    if(ShowCategoryOnFulfillment != null)
+                    {
+                        cbxShowCategoryOnFulfillment.Checked = Convert.ToBoolean(ShowCategoryOnFulfillment.ToString());
+                    }
+
+
                     //Settings["SettingName"]
 
                     /* uncomment to load saved settings in the text boxes
@@ -71,6 +101,38 @@ namespace GIBS.Modules.GIBS_FBFulfillment
             }
         }
 
+
+        private void BindModules()
+        {
+
+            DotNetNuke.Entities.Modules.ModuleController mc = new ModuleController();
+            ArrayList existMods = mc.GetModulesByDefinition(this.PortalId, "GIBS Food Bank Client Manager");
+
+            foreach (DotNetNuke.Entities.Modules.ModuleInfo mi in existMods)
+            {
+                if (!mi.IsDeleted)
+                {
+
+                    ListItem objListItemPage = new ListItem();
+                    objListItemPage.Value = mi.TabID.ToString() + "-" + mi.ModuleID.ToString();
+                    objListItemPage.Text = mi.ModuleTitle.ToString();
+
+                    drpModuleID.Items.Add(objListItemPage);
+
+                }
+            }
+
+            drpModuleID.Items.Insert(0, new ListItem(Localization.GetString("SelectModule", this.LocalResourceFile), "-1"));
+
+            if (Settings.Contains("foodBankClientModuleID"))
+            {
+                drpModuleID.SelectedValue = Settings["foodBankClientModuleID"].ToString();
+                //   LabelDebug.Text = Settings["foodBankClientModuleID"].ToString();
+
+            }
+
+        }
+
         /// -----------------------------------------------------------------------------
         /// <summary>
         /// UpdateSettings saves the modified settings to the Database
@@ -81,7 +143,12 @@ namespace GIBS.Modules.GIBS_FBFulfillment
             try
             {
                 var modules = new ModuleController();
-
+                ShowCategoryOnFulfillment = cbxShowCategoryOnFulfillment.Checked.ToString();
+                TwilioAccountSid = txtTwilioAccountSid.Text.ToString();
+                TwilioAuthToken = txtTwilioAuthToken.Text.ToString();
+                TwilioPhoneNumber = txtTwilioPhoneNumber.Text.ToString();
+                ProcessOrderLayOut = ddlProcessOrderLayOut.SelectedValue.ToString();
+                FoodBankClientModuleID = drpModuleID.SelectedValue.ToString();
                 //the following are two sample Module Settings, using the text boxes that are commented out in the ASCX file.
                 //module settings
                 //modules.UpdateModuleSetting(ModuleId, "Setting1", txtSetting1.Text);

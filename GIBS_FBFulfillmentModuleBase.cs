@@ -16,5 +16,7 @@ namespace GIBS.Modules.GIBS_FBFulfillment
 {
     public class GIBS_FBFulfillmentModuleBase : PortalModuleBase
     {
+        
+
     }
 }

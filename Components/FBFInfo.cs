@@ -28,9 +28,30 @@ namespace GIBS.Modules.GIBS_FBFulfillment.Components
         private bool isEnabled;
         private bool isPaperOrder;
         private DateTime createdOnDate;
+        private string clientCellPhone;
+        private int orderNumber;
+        private string visitNotes;
+
         public FBFInfo()
         {
 
+        }
+
+        public string VisitNotes
+        {
+            get { return visitNotes; }
+            set { visitNotes = value; }
+        }
+
+        public int OrderNumber
+        {
+            get { return orderNumber; }
+            set { orderNumber = value; }
+        }
+        public string ClientCellPhone
+        {
+            get { return clientCellPhone; }
+            set { clientCellPhone = value; }
         }
 
         public DateTime CreatedOnDate

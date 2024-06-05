@@ -1,0 +1,55 @@
+﻿
+
+/****** Object:  StoredProcedure [dbo].[GIBS_FBFulfillment_GetOrderDetails]    Script Date: 6/4/2024 12:28:41 PM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GIBS_FBFulfillment_GetOrderDetails]') AND type in (N'P', N'PC'))
+DROP PROCEDURE [dbo].[GIBS_FBFulfillment_GetOrderDetails]
+GO
+
+/****** Object:  StoredProcedure [dbo].[GIBS_FBFulfillment_GetOrderDetails]    Script Date: 6/4/2024 12:28:41 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+-- =============================================
+-- Author:		Joseph Aucoin
+-- Create date: 04/04/2024
+-- Description:	Food Pantry Client Order List
+-- =============================================
+CREATE PROCEDURE [dbo].[GIBS_FBFulfillment_GetOrderDetails]
+	-- Add the parameters for the stored procedure 
+@VisitID int
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+	SELECT        GIBS_FBClientsVisits.VisitID, GIBS_FBClients.ClientFirstName + ' ' +  GIBS_FBClients.ClientLastName AS ClientName,
+GIBS_FBClientsVisits.VisitDate, GIBS_FBClientsVisitItem.VisitItemID, GIBS_FBClientsVisitItem.ProductID,  GIBS_FBProducts.ProductName, GIBS_FBClientsVisitItem.Quantity, 
+GIBS_FBProductCategory.ProductCategory, 
+CASE
+  WHEN GIBS_FBClientsVisits.OrderStatusCode = 2 THEN 1
+  WHEN GIBS_FBClientsVisits.OrderStatusCode != 2 THEN 0
+ END AS IsEnabled,
+ CASE
+    WHEN GIBS_FBClients.ClientPhoneType ='Cell' THEN  '+1' + REPLACE(REPLACE(REPLACE(REPLACE(GIBS_FBClients.ClientPhone, '(', ''),')',''),'-',''),' ','')  
+    ELSE ''
+END AS ClientCellPhone
+
+FROM            GIBS_FBClientsVisits INNER JOIN
+                         GIBS_FBClientsVisitItem ON GIBS_FBClientsVisits.VisitID = GIBS_FBClientsVisitItem.VisitID INNER JOIN
+                         GIBS_FBClients ON GIBS_FBClientsVisits.ClientID = GIBS_FBClients.ClientID INNER JOIN
+                         GIBS_FBProducts ON GIBS_FBClientsVisitItem.ProductID = GIBS_FBProducts.ProductID INNER JOIN
+                         GIBS_FBProductCategory ON GIBS_FBProducts.ProductCategoryID = GIBS_FBProductCategory.ProductCategoryID 
+	where GIBS_FBClientsVisits.VisitID = @VisitID
+						 
+
+	ORDER by GIBS_FBProductCategory.SortOrder, GIBS_FBProducts.ProductName
+
+END
+GO
+
+

@@ -126,4 +126,10 @@
   <data name="lblVisitDate.Text" xml:space="preserve">
     <value>Visit Date</value>
   </data>
+  <data name="TwilioMessageSent.Text" xml:space="preserve">
+    <value>Pickup Text Sent to Client</value>
+  </data>
+  <data name="TwilioPickupMessage.Text" xml:space="preserve">
+    <value>Your order is ready to pick up.</value>
+  </data>
 </root>

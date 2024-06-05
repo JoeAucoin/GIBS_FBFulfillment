@@ -114,6 +114,15 @@ namespace GIBS.Modules.GIBS_FBFulfillment
         protected global::System.Web.UI.WebControls.Label LabelOrderMessage;
 
         /// <summary>
+        /// orderDetailsDiv control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl orderDetailsDiv;
+
+        /// <summary>
         /// LabelOrderDetails control.
         /// </summary>
         /// <remarks>
@@ -123,6 +132,15 @@ namespace GIBS.Modules.GIBS_FBFulfillment
         protected global::System.Web.UI.WebControls.Label LabelOrderDetails;
 
         /// <summary>
+        /// repeater1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater repeater1;
+
+        /// <summary>
         /// GridViewOrder control.
         /// </summary>
         /// <remarks>
@@ -130,6 +148,15 @@ namespace GIBS.Modules.GIBS_FBFulfillment
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.GridView GridViewOrder;
+
+        /// <summary>
+        /// CheckBoxNotifyClientOrderReady control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox CheckBoxNotifyClientOrderReady;
 
         /// <summary>
         /// LinkButtonProcessOrder control.
@@ -148,6 +175,15 @@ namespace GIBS.Modules.GIBS_FBFulfillment
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HiddenField HiddenFieldVisitID;
+
+        /// <summary>
+        /// HiddenFieldClientCell control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField HiddenFieldClientCell;
 
         /// <summary>
         /// PanelEnterOrder control.

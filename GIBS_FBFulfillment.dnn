@@ -1,8 +1,8 @@
 <dotnetnuke type="Package" version="5.0">
   <packages>
-    <package name="GIBS_FBFulfillment" type="Module" version="00.00.03">
-      <friendlyName>GIBS_FBFulfillment</friendlyName>
-      <description>GIBS.com GIBS_FBFulfillment module</description>
+    <package name="GIBS_FBFulfillment" type="Module" version="00.00.08">
+      <friendlyName>GIBS FBFulfillment</friendlyName>
+      <description>GIBS Food Bank Fulfillment Module</description>
       <iconFile>~/Images/icon_extensions_32px.png</iconFile>
       <owner>
         <name>GIBS.com</name>
@@ -31,10 +31,30 @@
               <name>00.00.03.SqlDataProvider</name>
               <version>00.00.03</version>
             </script>
+            <script type="Install">
+              <path>Providers\DataProviders\SqlDataProvider</path>
+              <name>00.00.04.SqlDataProvider</name>
+              <version>00.00.04</version>
+            </script>
+            <script type="Install">
+              <path>Providers\DataProviders\SqlDataProvider</path>
+              <name>00.00.05.SqlDataProvider</name>
+              <version>00.00.05</version>
+            </script>
+            <script type="Install">
+              <path>Providers\DataProviders\SqlDataProvider</path>
+              <name>00.00.06.SqlDataProvider</name>
+              <version>00.00.06</version>
+            </script>
+            <script type="Install">
+              <path>Providers\DataProviders\SqlDataProvider</path>
+              <name>00.00.08.SqlDataProvider</name>
+              <version>00.00.08</version>
+            </script>
             <script type="UnInstall">
               <path>Providers\DataProviders\SqlDataProvider</path>
               <name>Uninstall.SqlDataProvider</name>
-              <version>00.00.03</version>
+              <version>00.00.08</version>
             </script>
           </scripts>
         </component>
@@ -88,7 +108,7 @@
                     <controlKey>Settings</controlKey>
                     <controlSrc>DesktopModules/GIBS_FBFulfillment/Settings.ascx</controlSrc>
                     <supportsPartialRendering>False</supportsPartialRendering>
-                    <controlTitle>GIBS_FBFulfillment Settings</controlTitle>
+                    <controlTitle>Food Pantry Fulfillment Settings</controlTitle>
                     <controlType>Edit</controlType>
                     <iconFile />
                     <helpUrl />

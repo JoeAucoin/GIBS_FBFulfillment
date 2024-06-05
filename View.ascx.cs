@@ -16,7 +16,7 @@ using DotNetNuke.Security;
 using DotNetNuke.Services.Exceptions;
 using DotNetNuke.Services.Localization;
 using GIBS.Modules.GIBS_FBFulfillment.Components;
-
+using GIBS.Modules.FBClients.Components;
 using System;
 using System.Collections.Generic;
 using System.Web.UI.WebControls;
@@ -25,6 +25,11 @@ using GIBS.Modules.GIBS_FBFoodOrder.Components;
 using DotNetNuke.Common;
 using DotNetNuke.Entities.Portals;
 using System.Web.UI;
+using System.Data;
+using GIBS.FBClients.Components;
+using System.Resources;
+using System.Reflection;
+using System.Linq;
 
 namespace GIBS.Modules.GIBS_FBFulfillment
 {
@@ -41,7 +46,7 @@ namespace GIBS.Modules.GIBS_FBFulfillment
     /// 
     /// </summary>
     /// -----------------------------------------------------------------------------
-    public partial class View : GIBS_FBFulfillmentModuleBase, IActionable
+    public partial class View : GIBS_FBFulfillmentModuleBase    //, IActionable
     {
         private GridViewHelper helper;
 
@@ -54,6 +59,17 @@ namespace GIBS.Modules.GIBS_FBFulfillment
                 {
                     txtVisitDate.Text =  DateTime.Now.ToShortDateString();
                     FillGrid();
+
+                    if (Request.QueryString["enterorder"] != null)
+                    {
+                        string key = Request.QueryString["enterorder"].ToString();
+                        char separator = '-'; // Space character
+                        string[] keys = key.Split(separator); // returned array
+                        int visitID = Int32.Parse(keys[0].ToString());
+                        int clientID = Int32.Parse(keys[1].ToString());
+                        FillOrderGrid(visitID, clientID);
+                    }
+
                 }
 
             }
@@ -70,21 +86,30 @@ namespace GIBS.Modules.GIBS_FBFulfillment
             try
             {
 
-                List<FBFInfo> items;
-                FBFController controller = new FBFController();
-                items = controller.GetOrdersByStatusCode(Int32.Parse(ddlStatus.SelectedValue.ToString()),txtVisitDate.Text.ToString());
-                LabelOrderCount.Text = items.Count.ToString() + " Records";
-                if (items == null || items.Count == 0)
+                List<FBFInfo> fbfitems;
+                FBFController fbfcontroller = new FBFController();
+                fbfitems = fbfcontroller.GetOrdersByStatusCode(Int32.Parse(ddlStatus.SelectedValue.ToString()),txtVisitDate.Text.ToString());
+                LabelOrderCount.Text = fbfitems.Count.ToString() + " Records";
+                if (fbfitems == null || fbfitems.Count == 0)
                 {
-                    
+                   
                     LabelDebug.Visible = true;
                     LabelDebug.Text = "No Orders";
                 }
                 else
                 {
+                    if (Int32.Parse(ddlStatus.SelectedValue.ToString()) != -1)
+                    {
+                        GridViewOrders.Columns[0].Visible = false;
+                    }
+                    else 
+                    { 
+                        GridViewOrders.Columns[0].Visible=true; 
+                    }
+
                     LabelDebug.Visible = false;
                     
-                    GridViewOrders.DataSource = items;
+                    GridViewOrders.DataSource = fbfitems;
                     GridViewOrders.DataBind();
                 }
 
@@ -100,20 +125,20 @@ namespace GIBS.Modules.GIBS_FBFulfillment
         
 
 
-        public ModuleActionCollection ModuleActions
-        {
-            get
-            {
-                var actions = new ModuleActionCollection
-                    {
-                        {
-                            GetNextActionID(), Localization.GetString("EditModule", LocalResourceFile), "", "", "",
-                            EditUrl(), false, SecurityAccessLevel.Edit, true, false
-                        }
-                    };
-                return actions;
-            }
-        }
+        //public ModuleActionCollection ModuleActions
+        //{
+        //    get
+        //    {
+        //        var actions = new ModuleActionCollection
+        //            {
+        //                {
+        //                    GetNextActionID(), Localization.GetString("EditModule", LocalResourceFile), "", "", "",
+        //                    EditUrl(), false, SecurityAccessLevel.Edit, true, false
+        //                }
+        //            };
+        //        return actions;
+        //    }
+        //}
 
         protected void GridViewOrders_PageIndexChanging(object sender, System.Web.UI.WebControls.GridViewPageEventArgs e)
         {
@@ -152,32 +177,88 @@ namespace GIBS.Modules.GIBS_FBFulfillment
 
                 }
 
+                ///Client-Manager/ctl/EditClient/mid/387/cid/3
+                ///
+                if (e.CommandName == "LinkToClient")
+                {
+                    string _clientID = e.CommandArgument.ToString();
+                    string key = "";
+                    if (Settings.Contains("foodBankClientModuleID"))
+                    {
+                        key = Settings["foodBankClientModuleID"].ToString();
+                    }
+                            
+                    char separator = '-'; // Space character
+                    string[] keys = key.Split(separator); // returned array
+                    int tabID = Int32.Parse(keys[0].ToString());
+                    int moduleID = Int32.Parse(keys[1].ToString());
+
+                    Response.Redirect(EditUrl(tabID, "EditClient", true, "mid=" + moduleID, "cid="+ _clientID));
+
+                }
+
+                    if (e.CommandName == "SendText")
+                {
+
+                    string key = e.CommandArgument.ToString();
+                    char separator = '-'; // Space character
+                    string[] keys = key.Split(separator); // returned array
+                    string _clientCell = keys[0].ToString();
+                    int visitID = Int32.Parse(keys[1].ToString());
+                    string _msg = Localization.GetString("TwilioPickupMessage", this.LocalResourceFile);
+                    SendTwilioMessage(_msg.ToString(), _clientCell.ToString(), visitID);
+
+                    FillGrid(); 
+
+                }
 
                 if (e.CommandName == "Edit")
                 {
-                    int _visitID = Convert.ToInt32(e.CommandArgument);
+                    string key = e.CommandArgument.ToString();
+                    char separator = '-'; // Space character
+                    string[] keys = key.Split(separator); // returned array
+                    string _clientCell = keys[0].ToString();
+                    int _visitID = Int32.Parse(keys[1].ToString());
 
-                    List<FBFInfo> items;
-                    FBFController controller = new FBFController();
-                    items = controller.GetOrderDetails(_visitID);
-                    HiddenFieldVisitID.Value = _visitID.ToString();
+                    
+                   // var cellphone = DataBinder.Eval(e.Row.DataItem, "ClientCellPhone");
+
                     GetOrder(_visitID);
-                    if (items != null)
-                    {
-                        panelGrid.Visible = false;
-                        PanelRecord.Visible = true;
+                    HiddenFieldVisitID.Value = _visitID.ToString();
+                    HiddenFieldClientCell.Value = _clientCell.ToString();
 
-                        GroupIt();
-                        
-                        GridViewOrder.DataSource = items;
-                        GridViewOrder.DataBind();
-
-                        //   FillTranslationsGrid();
-                    }
-                    else
+                    if (Settings.Contains("processOrderLayOut"))
                     {
-                        LabelOrderMessage.Text = "Order Error";
+                        if(Settings["processOrderLayOut"].ToString() == "1")
+                        {
+                            List<FBFInfo> items;
+                            FBFController controller = new FBFController();
+                            items = controller.GetOrderDetails(_visitID);
+                            
+                            GetOrder(_visitID);
+                            if (items != null)
+                            {
+                                panelGrid.Visible = false;
+                                PanelRecord.Visible = true;
+                                GroupIt();
+                                GridViewOrder.DataSource = items;
+                                GridViewOrder.DataBind();
+
+                                //   FillTranslationsGrid();
+                            }
+                            else
+                            {
+                                LabelOrderMessage.Text = "Order Error";
+                            }
+                        }
+                        if (Settings["processOrderLayOut"].ToString() == "2")
+                        {
+                            FillRepeater(_visitID);
+                        }
                     }
+
+
+
 
 
                 }
@@ -189,6 +270,85 @@ namespace GIBS.Modules.GIBS_FBFulfillment
             }
 
         }
+
+        private DataTable dtTopHalf;
+        private DataTable dtBottomHalf;
+
+        public void FillRepeater(int _visitID)
+        {
+
+            try
+            {
+
+                List<FBFInfo> items;
+                FBFController controller = new FBFController();
+                items = controller.GetOrderDetails(_visitID);
+
+                if (items != null)
+                {
+                    panelGrid.Visible = false;
+                    PanelRecord.Visible = true;
+                }
+
+                  DataTable dt = new DataTable();
+                 dt = ToDataTable(items);
+                int halfCount = dt.Rows.Count / 2;
+                dtTopHalf = dt.AsEnumerable().Select(x => x).Take(halfCount).CopyToDataTable();
+                dtBottomHalf = dt.AsEnumerable().Select(x => x).Skip(halfCount).CopyToDataTable();
+                repeater1.DataSource = new List<bool>() { true, false };
+                repeater1.DataBind();
+
+
+            }
+            catch (Exception ex)
+            {
+                Exceptions.ProcessModuleLoadException(this, ex);
+            }
+
+        }
+
+        public static DataTable ToDataTable<T>(List<T> items)
+        {
+            DataTable dataTable = new DataTable(typeof(T).Name);
+
+            //Get all the properties
+            PropertyInfo[] Props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (PropertyInfo prop in Props)
+            {
+                //Setting column names as Property names
+                dataTable.Columns.Add(prop.Name);
+            }
+            foreach (T item in items)
+            {
+                var values = new object[Props.Length];
+                for (int i = 0; i < Props.Length; i++)
+                {
+                    //inserting property values to datatable rows
+                    values[i] = Props[i].GetValue(item, null);
+                }
+                dataTable.Rows.Add(values);
+            }
+            //put a breakpoint here and check datatable
+            return dataTable;
+        }
+
+        protected void repeater1_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                bool isTopHalf = (bool)e.Item.DataItem;
+                GridView gvHalf = e.Item.FindControl("gvHalf") as GridView;
+                gvHalf.DataSource = isTopHalf ? dtTopHalf : dtBottomHalf;
+                gvHalf.DataBind();
+               
+                if (Settings.Contains("showCategoryOnFulfillment"))
+                {
+                    gvHalf.Columns[0].Visible = Convert.ToBoolean(Settings["showCategoryOnFulfillment"].ToString());
+                }
+            }
+            
+        }
+
 
         protected void GridViewOrders_RowDeleting(object sender, System.Web.UI.WebControls.GridViewDeleteEventArgs e)
         {
@@ -281,7 +441,7 @@ namespace GIBS.Modules.GIBS_FBFulfillment
                     
                     PanelEnterOrder.Visible = true;
 
-                    LabelDebug.Visible = false;
+                   // LabelDebug.Visible = false;
                     LabelRecordCount.Text = items.Count.ToString() + " Items";
                     ButtonSaveOrder.Visible = true;
                     GridViewOrderSheet.DataSource = items;
@@ -309,9 +469,47 @@ namespace GIBS.Modules.GIBS_FBFulfillment
                 {
                     string OrderDetails = "Visit Date: " + fbfo.VisitDate.ToShortDateString() + "<br />"
                                         + fbfo.ClientName.ToString() + "<br />"
-                                        + "Bags Allowed: " + fbfo.VisitNumBags.ToString();
+                                        + "Bags: " + fbfo.VisitNumBags.ToString() + "<br />"
+                                        + "Household Total: " + fbfo.HouseholdTotal.ToString() + "<br />"
+                                        + "Notes: " + fbfo.VisitNotes.ToString();
                     LabelOrderDetails.Text = OrderDetails.ToString();
                     LabelorderDetails1.Text = OrderDetails.ToString();
+
+                    
+
+                    switch (fbfo.HouseholdTotal)
+                    {
+                        case 1:
+                            orderDetailsDiv.Attributes.Add("style", "background-color:#F9E770;padding:15px;"); // YELLOW
+                            break;
+                        case 2:
+                            orderDetailsDiv.Attributes.Add("style", "background-color:#F9E770;padding:15px;"); // YELLOW
+                            break;
+                        case 3:
+                            orderDetailsDiv.Attributes.Add("style", "background-color:#6ACD8D;padding:15px;"); //GREEN
+                            break;
+                        case 4:
+                            orderDetailsDiv.Attributes.Add("style", "background-color:#6ACD8D;padding:15px;"); //GREEN
+                            break;
+                        case 5:
+                            orderDetailsDiv.Attributes.Add("style", "background-color:#00BFFF;padding:15px;"); // BLUE
+                            break;
+                        case 6:
+                            orderDetailsDiv.Attributes.Add("style", "background-color:#00BFFF;padding:15px;"); // BLUE
+                            break;
+                        case 7:
+                            orderDetailsDiv.Attributes.Add("style", "background-color:#FA7C95;padding:15px;");  //PINK
+                            break;
+                        case 8:
+                            orderDetailsDiv.Attributes.Add("style", "background-color:#FA7C95;padding:15px;");  //PINK
+                            break;
+
+                        default:
+                            
+                            break;
+                    }
+
+
                 }
 
             }
@@ -329,6 +527,16 @@ namespace GIBS.Modules.GIBS_FBFulfillment
             item.OrderStatusCode = 3;
             item.VisitID = Int32.Parse(HiddenFieldVisitID.Value.ToString());
             controller.UpdateVisitOrderStatusCode(item);
+
+            if(CheckBoxNotifyClientOrderReady.Checked && HiddenFieldClientCell.ToString().Length >10)
+            {
+                string _msg = Localization.GetString("TwilioPickupMessage", this.LocalResourceFile);
+                string _clientcell = HiddenFieldClientCell.Value.ToString();
+                int visitID = Int32.Parse(HiddenFieldVisitID.Value.ToString());
+                SendTwilioMessage(_msg.ToString(), _clientcell.ToString(), visitID);
+
+            }
+            HiddenFieldClientCell.Value = "";
             HiddenFieldVisitID.Value = "";
             LabelOrderDetails.Text = "";
             LabelorderDetails1.Text = "";
@@ -341,9 +549,11 @@ namespace GIBS.Modules.GIBS_FBFulfillment
 
         }
 
+      
+
+
         //  private string previousFirstColumnValue = "";
         Color colorChoice = Color.LightGoldenrodYellow;
-
         protected void GridViewOrderSheet_RowDataBound(object sender, GridViewRowEventArgs e)
         {
 
@@ -388,6 +598,7 @@ namespace GIBS.Modules.GIBS_FBFulfillment
                     colorChoice = Color.LightGoldenrodYellow;
                 }
 
+           
 
                 int limit = Convert.ToInt32(DataBinder.Eval(e.Row.DataItem, "Limit"));
                 DropDownList ddlQty = (DropDownList)e.Row.FindControl("DropDownListQty");
@@ -416,8 +627,8 @@ namespace GIBS.Modules.GIBS_FBFulfillment
             HiddenFieldVisitID.Value = "";
             LabelOrderDetails.Text = "";
             LabelorderDetails1.Text = "";
-            Response.Redirect(PortalSettings.ActiveTab.Url, true);
-
+            //  Response.Redirect(PortalSettings.ActiveTab.Url, true);
+            Response.Redirect(Globals.NavigateURL(), true);
         }
 
         public void ProcessGrid()
@@ -485,6 +696,65 @@ namespace GIBS.Modules.GIBS_FBFulfillment
 
         }
 
+        protected void GridViewOrders_Sorting(object sender, GridViewSortEventArgs e)
+        {
 
+        }
+
+        protected void GridViewOrders_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType == DataControlRowType.DataRow)
+            {
+                LinkButton sndTextButton = (LinkButton)e.Row.FindControl("LinkButtonSendText");
+                int orderStatusCode = Convert.ToInt32(DataBinder.Eval(e.Row.DataItem, "OrderStatusCode"));
+                var cellphone = DataBinder.Eval(e.Row.DataItem, "ClientCellPhone");
+
+
+                if (orderStatusCode == 3 && cellphone.ToString().Length > 10)
+                {
+                    sndTextButton.Visible = true;
+                }
+            }
+        }
+
+        public void SendTwilioMessage(string _message, string _clientCellNumber, int _visitID)
+        {
+            string _TwilioAccountSid = "";
+            string _TwilioAuthToken = "";
+            string _TwilioPhoneNumber = "";
+           
+
+            if (Settings.Contains("twilioAccountSid"))
+            {
+               _TwilioAccountSid = Settings["twilioAccountSid"].ToString();
+            }
+            if (Settings.Contains("twilioAuthToken"))
+            {
+                _TwilioAuthToken = Settings["twilioAuthToken"].ToString();
+            }
+            if (Settings.Contains("twilioPhoneNumber"))
+            {
+                _TwilioPhoneNumber = Settings["twilioPhoneNumber"].ToString();
+            }
+
+            if (_TwilioAccountSid != string.Empty && _TwilioAuthToken != string.Empty && _TwilioPhoneNumber != string.Empty)
+            {
+
+                TwilioSMS twilioSMS = new TwilioSMS(_TwilioAccountSid.ToString(), _TwilioAuthToken.ToString(), _TwilioPhoneNumber.ToString());
+                twilioSMS.SendSMS(_clientCellNumber.ToString(), _message.ToString());
+            }
+
+            // UPDATE THE OrderStatusCode to 4
+            Controller controller = new Controller();
+            FBFOInfo item = new FBFOInfo();
+            item.OrderStatusCode = 4;
+            item.VisitID = _visitID;
+            controller.UpdateVisitOrderStatusCode(item);
+
+            LabelDebug.Text += "<br />" + Localization.GetString("TwilioMessageSent", this.LocalResourceFile);
+            LabelDebug.Visible = true;
+        }
+
+        
     }
 }

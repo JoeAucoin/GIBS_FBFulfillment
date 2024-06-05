@@ -15,3 +15,12 @@
     margin-left: 0.5rem !important;
     font-size: 1rem !important;
 }
+
+.orderDetails {
+    color:black;
+    font-size: 26px;
+    line-height: 28px;
+    font-weight:700;
+    letter-spacing: normal;
+    
+}

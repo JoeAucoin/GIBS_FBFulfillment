@@ -15,7 +15,7 @@
 </script>
 
 <asp:Panel runat="server" ID="panelGrid" Visible="True">
-<div><asp:Label ID="LabelDebug" runat="server" Text="" /></div>
+<div><asp:Label ID="LabelDebug" runat="server" Text="999" /></div>
 
 <div style=" float:right">
 <asp:Button ID="btnFillGrid" runat="server" Text="Button" ResourceKey="btnFillGrid" OnClick="btnFillGrid_Click"  CssClass="dnnPrimaryAction" /></div>
@@ -29,9 +29,11 @@
             <dnn:Label ID="lblStatus" runat="server"  AssociatedControlID="ddlStatus" Text="Status" />
             <asp:DropDownList ID="ddlStatus" runat="server">
                 <asp:ListItem Text="Show All" Value="-1"></asp:ListItem>
-                 <asp:ListItem Value="1" Text="Not Yet Received"></asp:ListItem>
+                <asp:ListItem Value="0" Text="Manual Order-Not Yet Entered"></asp:ListItem>
+                 <asp:ListItem Value="1" Text="Text Sent - Not Yet Received"></asp:ListItem>
                  <asp:ListItem Value="2" Text="Ready to Fill"></asp:ListItem>
                  <asp:ListItem Value="3" Text="Order Filled"></asp:ListItem>
+                <asp:ListItem Value="4" Text="Order Filled-Text Sent"></asp:ListItem>
             </asp:DropDownList>
         </div>		
     </fieldset>
@@ -39,22 +41,39 @@
 <div class="text-center">
     <asp:Label ID="LabelOrderCount" runat="server" Text=""></asp:Label>
 </div>
-<asp:GridView ID="GridViewOrders" runat="server" OnPageIndexChanging="GridViewOrders_PageIndexChanging" OnRowEditing="GridViewOrders_RowEditing"
-     OnRowCommand="GridViewOrders_RowCommand" OnRowDeleting="GridViewOrders_RowDeleting" DataKeyNames="VisitID" 
-     HorizontalAlign="Center" AutoGenerateColumns="False" CssClass="table table-striped table-responsive">
+<asp:GridView ID="GridViewOrders" runat="server" OnRowDataBound="GridViewOrders_RowDataBound" OnRowEditing="GridViewOrders_RowEditing"
+     OnRowCommand="GridViewOrders_RowCommand" OnRowDeleting="GridViewOrders_RowDeleting" DataKeyNames="VisitID" OnSorting="GridViewOrders_Sorting" 
+     HorizontalAlign="Center" AutoGenerateColumns="False" CssClass="table table-striped">
 
 
      <Columns>
-
+<asp:BoundField HeaderText="#" DataField="OrderNumber" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="gridtext text-center" Visible="true"></asp:BoundField>
           <asp:TemplateField HeaderText="" ItemStyle-VerticalAlign="Top" ItemStyle-HorizontalAlign="Center" ItemStyle-Width="170px">
          <ItemTemplate>
            <asp:LinkButton ID="LinkButtonEdit" CausesValidation="False" CssClass="btn btn-lg btn-default" Enabled='<%# DataBinder.Eval(Container.DataItem, "IsEnabled") %>'   
-             CommandArgument='<%# Eval("VisitID") %>' 
+             CommandArgument='<%# Eval("ClientCellPhone") + "-" + Eval("VisitID") %>' 
              CommandName="Edit" runat="server">Process Order</asp:LinkButton>
          </ItemTemplate>
        </asp:TemplateField>
+          <asp:TemplateField HeaderText="Send Text" ItemStyle-VerticalAlign="Top" ItemStyle-Width="40px" ItemStyle-HorizontalAlign="Center">
+         <ItemTemplate>
+           <asp:LinkButton ID="LinkButtonSendText" CausesValidation="False"     
+             CommandArgument='<%# Eval("ClientCellPhone") + "-" + Eval("VisitID") %>' Visible="false" CommandName="SendText" runat="server"><asp:image ID="imgSendOrderSheet" runat="server" imageurl="~/Icons/Sigma/Email_32x32_Standard.png" AlternateText="Send Order Sheet" /></asp:LinkButton>
+             
+         </ItemTemplate>
+       </asp:TemplateField>
+         
+          <asp:TemplateField HeaderText="ID" ItemStyle-VerticalAlign="Top" HeaderStyle-CssClass="text-center" ItemStyle-Width="40px" ItemStyle-HorizontalAlign="Center">
+         <ItemTemplate>
+             
+           <asp:LinkButton ID="LinkButtonLinkToClient" CausesValidation="False"     
+             CommandArgument='<%# Eval("ClientID") %>' CommandName="LinkToClient" runat="server">
+               <%# Eval("ClientID") %></asp:LinkButton>
+             
+         </ItemTemplate>
+       </asp:TemplateField>
 
-         <asp:BoundField HeaderText="ID" DataField="ClientID" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="gridtext text-center" Visible="true"></asp:BoundField>
+         
          <asp:BoundField HeaderText="Client" DataField="ClientName" ItemStyle-CssClass="gridtext" Visible="true"></asp:BoundField>
         <asp:BoundField HeaderText="Time Entered" DataField="CreatedOnDate" DataFormatString="{0:hh:mm tt}" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="gridtext text-center" />
          <asp:BoundField HeaderText="Bags" DataField="VisitNumBags" HeaderStyle-HorizontalAlign="Center" HeaderStyle-CssClass="text-center" ItemStyle-CssClass="gridtext text-center" Visible="true"></asp:BoundField>
@@ -72,15 +91,51 @@
 
 </asp:GridView>
 
+    <div>
+        <b>OrderStatusCode</b>
+        <ul>
+        
+		<li>0 -	OrderEntered //Paper Process</li>
+		<li>1 -	OrderLinkSent  //Client Sent Order Link via Text</li>
+		<li>2 -	OrderSubmitted  //Client Submitted Order via Text Web Link - Ready for Fulfillment</li>
+		<li>3 -	OrderFilled  //Order Filled - Ready for Pickup</li>
+		<li>4 -	OrderWaitingForPickup  //Link Sent to Client - Order filled, ready for pickup</li>
+        </ul>
+    </div>
 
 </asp:Panel>
 <asp:Panel ID="PanelRecord" runat="server" Visible="false">
 <div style="width:50%; margin: auto;">
     <asp:Label ID="LabelOrderMessage" runat="server" Text=""></asp:Label>
     </div>
-<h4>
-    <asp:Label ID="LabelOrderDetails" runat="server" Text="Label"></asp:Label>
-</h4>
+<div runat="server" id="orderDetailsDiv">
+    <asp:Label ID="LabelOrderDetails" runat="server" CssClass="orderDetails" Text="Label"></asp:Label>
+</div>
+<div class="row">
+    <asp:Repeater ID="repeater1" runat="server" OnItemDataBound="repeater1_ItemDataBound">
+
+    <ItemTemplate>
+        <div class="col-md-6">
+            <asp:GridView ID="gvHalf" runat="server" AutoGenerateColumns="false" CssClass="table table-striped" Width="100%">
+                <Columns>
+         
+         <asp:BoundField HeaderText="Category" DataField="ProductCategory" Visible="true"></asp:BoundField>
+        <asp:BoundField HeaderText="Product" DataField="ProductName" ItemStyle-VerticalAlign="Top" ItemStyle-HorizontalAlign="Left"></asp:BoundField>
+        <asp:BoundField HeaderText="Quantity" DataField="Quantity" ItemStyle-VerticalAlign="Top" HeaderStyle-CssClass="text-center" ItemStyle-HorizontalAlign="Center"></asp:BoundField>
+        <asp:TemplateField ItemStyle-CssClass="text-center" HeaderText="Filled">
+			<ItemTemplate>
+			<asp:CheckBox ID="CheckBoxRepeater" runat="server" />
+			</ItemTemplate>
+		</asp:TemplateField>        
+     </Columns>
+            </asp:GridView>
+        </div>
+    </ItemTemplate>
+    
+
+</asp:Repeater>
+</div>
+
 <asp:GridView ID="GridViewOrder" runat="server" HorizontalAlign="Center" OnSorting="GridViewOrder_Sorting"
     
     AutoGenerateColumns="False" CssClass="table table-striped">
@@ -102,13 +157,16 @@
      </Columns>
 
 </asp:GridView>
+    <div>
+        <asp:CheckBox ID="CheckBoxNotifyClientOrderReady" Text="&nbsp;&nbsp;Text Client Order Ready" TextAlign="Right" runat="server" />
+    </div>
 <div>
     <asp:LinkButton ID="LinkButtonProcessOrder" runat="server" OnClick="LinkButtonProcessOrder_Click" CssClass="btn btn-default btn-lg">Mark Order Filled</asp:LinkButton>
 </div>
    
 </asp:Panel>
  <asp:HiddenField ID="HiddenFieldVisitID" runat="server" />
-
+<asp:HiddenField ID="HiddenFieldClientCell" runat="server" />
 
 <asp:Panel ID="PanelEnterOrder" runat="server" Visible="false">
 

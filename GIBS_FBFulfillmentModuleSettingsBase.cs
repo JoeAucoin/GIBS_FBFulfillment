@@ -16,5 +16,98 @@ namespace GIBS.Modules.GIBS_FBFulfillment
 {
     public class GIBS_FBFulfillmentModuleSettingsBase : ModuleSettingsBase
     {
+
+        public string ShowCategoryOnFulfillment
+        {
+            get
+            {
+                if (Settings.Contains("showCategoryOnFulfillment"))
+                    return Settings["showCategoryOnFulfillment"].ToString();
+                return "True";
+
+            }
+            set
+            {
+                var mc = new ModuleController();
+                mc.UpdateTabModuleSetting(this.TabModuleId, "showCategoryOnFulfillment", value.ToString());
+            }
+
+        }
+        public string FoodBankClientModuleID
+        {
+            get
+            {
+                if (Settings.Contains("foodBankClientModuleID"))
+                    return Settings["foodBankClientModuleID"].ToString();
+                return "";
+
+            }
+            set
+            {
+                var mc = new ModuleController();
+                mc.UpdateTabModuleSetting(this.TabModuleId, "foodBankClientModuleID", value.ToString());
+            }
+
+        }
+
+        public string TwilioAccountSid
+        {
+            get
+            {
+                if (Settings.Contains("twilioAccountSid"))
+                    return Settings["twilioAccountSid"].ToString();
+                return "";
+            }
+            set
+            {
+                var mc = new ModuleController();
+                mc.UpdateTabModuleSetting(TabModuleId, "twilioAccountSid", value.ToString());
+            }
+        }
+
+        public string TwilioAuthToken
+        {
+            get
+            {
+                if (Settings.Contains("twilioAuthToken"))
+                    return Settings["twilioAuthToken"].ToString();
+                return "";
+            }
+            set
+            {
+                var mc = new ModuleController();
+                mc.UpdateTabModuleSetting(TabModuleId, "twilioAuthToken", value.ToString());
+            }
+        }
+
+        public string TwilioPhoneNumber
+        {
+            get
+            {
+                if (Settings.Contains("twilioPhoneNumber"))
+                    return Settings["twilioPhoneNumber"].ToString();
+                return "";
+            }
+            set
+            {
+                var mc = new ModuleController();
+                mc.UpdateTabModuleSetting(TabModuleId, "twilioPhoneNumber", value.ToString());
+            }
+        }
+        //ProcessOrderLayOut
+        public string ProcessOrderLayOut
+        {
+            get
+            {
+                if (Settings.Contains("processOrderLayOut"))
+                    return Settings["processOrderLayOut"].ToString();
+                return "";
+            }
+            set
+            {
+                var mc = new ModuleController();
+                mc.UpdateTabModuleSetting(TabModuleId, "processOrderLayOut", value.ToString());
+            }
+        }
     }
 }
