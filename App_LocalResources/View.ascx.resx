@@ -123,6 +123,9 @@
   <data name="EditModule.Text" xml:space="preserve">
     <value>Edit Module</value>
   </data>
+  <data name="lblLocation.Text" xml:space="preserve">
+    <value>Service Location</value>
+  </data>
   <data name="lblVisitDate.Text" xml:space="preserve">
     <value>Visit Date</value>
   </data>

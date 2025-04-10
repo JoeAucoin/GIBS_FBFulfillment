@@ -1,6 +1,6 @@
 <dotnetnuke type="Package" version="5.0">
   <packages>
-    <package name="GIBS_FBFulfillment" type="Module" version="00.00.08">
+    <package name="GIBS_FBFulfillment" type="Module" version="00.00.11">
       <friendlyName>GIBS FBFulfillment</friendlyName>
       <description>GIBS Food Bank Fulfillment Module</description>
       <iconFile>~/Images/icon_extensions_32px.png</iconFile>
@@ -51,10 +51,15 @@
               <name>00.00.08.SqlDataProvider</name>
               <version>00.00.08</version>
             </script>
+            <script type="Install">
+              <path>Providers\DataProviders\SqlDataProvider</path>
+              <name>00.00.10.SqlDataProvider</name>
+              <version>00.00.10</version>
+            </script>
             <script type="UnInstall">
               <path>Providers\DataProviders\SqlDataProvider</path>
               <name>Uninstall.SqlDataProvider</name>
-              <version>00.00.08</version>
+              <version>00.00.11</version>
             </script>
           </scripts>
         </component>

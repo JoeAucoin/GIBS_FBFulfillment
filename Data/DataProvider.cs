@@ -80,7 +80,7 @@ namespace GIBS.Modules.GIBS_FBFulfillment.Data
         //public abstract IDataReader GetItem(int itemId);
         //
 
-        public abstract IDataReader GetOrdersByStatusCode(int orderStatusCode, string visitDate);
+        public abstract IDataReader GetOrdersByStatusCode(int orderStatusCode, string visitDate, string serviceLocation);
 
         public abstract IDataReader GetOrderDetails(int visitID);
 

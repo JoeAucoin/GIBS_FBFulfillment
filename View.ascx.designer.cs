@@ -78,6 +78,24 @@ namespace GIBS.Modules.GIBS_FBFulfillment
         protected global::System.Web.UI.WebControls.DropDownList ddlStatus;
 
         /// <summary>
+        /// lblLocation control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::DotNetNuke.UI.UserControls.LabelControl lblLocation;
+
+        /// <summary>
+        /// ddlLocations control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlLocations;
+
+        /// <summary>
         /// LabelOrderCount control.
         /// </summary>
         /// <remarks>

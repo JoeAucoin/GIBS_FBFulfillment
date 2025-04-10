@@ -9,9 +9,9 @@ namespace GIBS.Modules.GIBS_FBFulfillment.Components
 {
     public class FBFController
     {
-        public List<FBFInfo> GetOrdersByStatusCode(int orderStatusCode, string visitDate)
+        public List<FBFInfo> GetOrdersByStatusCode(int orderStatusCode, string visitDate, string serviceLocation)
         {
-            return CBO.FillCollection<FBFInfo>(DataProvider.Instance().GetOrdersByStatusCode(orderStatusCode, visitDate));
+            return CBO.FillCollection<FBFInfo>(DataProvider.Instance().GetOrdersByStatusCode(orderStatusCode, visitDate, serviceLocation));
         }
 
         public List<FBFInfo> GetOrderDetails(int visitID)

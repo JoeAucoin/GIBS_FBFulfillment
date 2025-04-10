@@ -1,0 +1,97 @@
+﻿
+
+/****** Object:  StoredProcedure [dbo].[GIBS_FBFulfillment_GetOrdersByStatusCode]    Script Date: 12/12/2024 7:53:33 AM ******/
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GIBS_FBFulfillment_GetOrdersByStatusCode]') AND type in (N'P', N'PC'))
+DROP PROCEDURE [dbo].[GIBS_FBFulfillment_GetOrdersByStatusCode]
+GO
+
+/****** Object:  StoredProcedure [dbo].[GIBS_FBFulfillment_GetOrdersByStatusCode]    Script Date: 12/12/2024 7:53:33 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+-- =============================================
+-- Author:		Joseph Aucoin
+-- Create date: 04/04/2024
+-- Description:	Food Pantry Client Order List
+-- =============================================
+CREATE PROCEDURE [dbo].[GIBS_FBFulfillment_GetOrdersByStatusCode]
+	-- Add the parameters for the stored procedure 
+@OrderStatusCode int,
+@VisitDate date,
+@ServiceLocation varchar(50)
+AS
+BEGIN
+
+
+Declare  @LOCVisitDate datetime,
+       @LOCOrderStatusCode int,
+       @LOCServiceLocation varchar(50)
+SET @LOCVisitDate = @VisitDate
+SET @LOCOrderStatusCode = @OrderStatusCode
+SET @LOCServiceLocation = @ServiceLocation
+
+if(@LOCServiceLocation = '0' or @LOCServiceLocation is null)
+begin
+	set @LOCServiceLocation=null;
+end
+
+declare @current_utc_offset int;
+
+IF  ServerProperty('EngineEdition') >= 5
+Begin
+set @current_utc_offset = (select  convert(int, left(current_utc_offset,3)) AS current_utc_offset from sys.time_zone_info Where Name = 'US Eastern Standard Time')
+End
+
+if(@current_utc_offset is null)
+begin
+	set @current_utc_offset = 0;
+end
+
+if(@LOCOrderStatusCode= -1 or @LOCOrderStatusCode is null)
+begin
+	set @LOCOrderStatusCode = null;
+end
+
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+	SELECT     ROW_NUMBER() OVER(ORDER BY GIBS_FBClientsVisits.VisitID asc) AS OrderNumber, 
+			GIBS_FBClients.ClientID,  GIBS_FBClients.ClientFirstName + ' ' +  GIBS_FBClients.ClientLastName AS ClientName, 
+			coalesce(GIBS_FBClients.ClientLanguage, '') AS ClientLanguage, 
+			GIBS_FBClientsVisits.VisitID, GIBS_FBClientsVisits.VisitDate, GIBS_FBClientsVisits.VisitNumBags, 
+			 coalesce(GIBS_FBClientsVisits.OrderStatusCode, 0) AS OrderStatusCode , 
+			
+			 dateadd(hour, @current_utc_offset, GIBS_FBClientsVisits.CreatedOnDate)	 AS CreatedOnDate
+			 ,
+			 CASE
+  WHEN GIBS_FBClientsVisits.OrderStatusCode = 2 THEN 1
+  WHEN GIBS_FBClientsVisits.OrderStatusCode != 2 THEN 0
+ END AS IsEnabled,
+  CASE
+  WHEN GIBS_FBClientsVisits.OrderStatusCode = 0 THEN 1
+  WHEN GIBS_FBClientsVisits.OrderStatusCode != 0 THEN 0
+ END AS IsPaperOrder,
+ CASE
+    WHEN GIBS_FBClients.ClientPhoneType ='Cell' THEN  '+1' + REPLACE(REPLACE(REPLACE(REPLACE(GIBS_FBClients.ClientPhone, '(', ''),')',''),'-',''),' ','')  
+    ELSE ''
+END AS ClientCellPhone
+			
+FROM            GIBS_FBClientsVisits
+
+INNER JOIN      GIBS_FBClients       ON GIBS_FBClients.ClientID = GIBS_FBClientsVisits.ClientID
+
+						WHERE  (@LOCOrderStatusCode is null or OrderStatusCode = @LOCOrderStatusCode) AND
+						(GIBS_FBClientsVisits.VisitDate = @LOCVisitDate)
+						and  (@LOCServiceLocation is null or GIBS_FBClientsVisits.ServiceLocation=@LOCServiceLocation)
+
+						ORDER By GIBS_FBClientsVisits.VisitID desc
+	
+END
+GO
+
+

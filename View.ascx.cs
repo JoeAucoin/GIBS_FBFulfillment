@@ -30,6 +30,7 @@ using GIBS.FBClients.Components;
 using System.Resources;
 using System.Reflection;
 using System.Linq;
+using DotNetNuke.Common.Lists;
 
 namespace GIBS.Modules.GIBS_FBFulfillment
 {
@@ -57,6 +58,7 @@ namespace GIBS.Modules.GIBS_FBFulfillment
 
                 if (!IsPostBack)
                 {
+                    FillLocationsDropdown();
                     txtVisitDate.Text =  DateTime.Now.ToShortDateString();
                     FillGrid();
 
@@ -88,23 +90,25 @@ namespace GIBS.Modules.GIBS_FBFulfillment
 
                 List<FBFInfo> fbfitems;
                 FBFController fbfcontroller = new FBFController();
-                fbfitems = fbfcontroller.GetOrdersByStatusCode(Int32.Parse(ddlStatus.SelectedValue.ToString()),txtVisitDate.Text.ToString());
+                fbfitems = fbfcontroller.GetOrdersByStatusCode(Int32.Parse(ddlStatus.SelectedValue.ToString()),txtVisitDate.Text.ToString(), ddlLocations.SelectedValue.ToString());
                 LabelOrderCount.Text = fbfitems.Count.ToString() + " Records";
                 if (fbfitems == null || fbfitems.Count == 0)
                 {
-                   
+                    GridViewOrders.Visible = false;
                     LabelDebug.Visible = true;
                     LabelDebug.Text = "No Orders";
                 }
                 else
                 {
+                    GridViewOrders.Visible = true;
+
                     if (Int32.Parse(ddlStatus.SelectedValue.ToString()) != -1)
                     {
                         GridViewOrders.Columns[0].Visible = false;
                     }
                     else 
-                    { 
-                        GridViewOrders.Columns[0].Visible=true; 
+                    {
+                        GridViewOrders.Columns[0].Visible = true;
                     }
 
                     LabelDebug.Visible = false;
@@ -122,7 +126,27 @@ namespace GIBS.Modules.GIBS_FBFulfillment
 
         }
 
-        
+        public void FillLocationsDropdown()
+        {
+
+            try
+            {
+                var MobileLocations = new ListController().GetListEntryInfoItems("ClientServiceLocation", "", this.PortalId);
+
+                ddlLocations.DataTextField = "Text";
+                ddlLocations.DataValueField = "Text";
+                ddlLocations.DataSource = MobileLocations;
+                ddlLocations.DataBind();
+                ddlLocations.Items.Insert(0, new ListItem("All Locations", "0"));
+                ddlLocations.Items.Insert(1, new ListItem("This Location", "Pantry"));
+                ddlLocations.SelectedValue = "Pantry";
+            }
+            catch (Exception ex)
+            {
+                Exceptions.ProcessModuleLoadException(this, ex);
+            }
+
+        }
 
 
         //public ModuleActionCollection ModuleActions
@@ -290,14 +314,21 @@ namespace GIBS.Modules.GIBS_FBFulfillment
                     PanelRecord.Visible = true;
                 }
 
-                  DataTable dt = new DataTable();
-                 dt = ToDataTable(items);
-                int halfCount = dt.Rows.Count / 2;
-                dtTopHalf = dt.AsEnumerable().Select(x => x).Take(halfCount).CopyToDataTable();
-                dtBottomHalf = dt.AsEnumerable().Select(x => x).Skip(halfCount).CopyToDataTable();
+                DataTable dt = new DataTable();
+                dt = ToDataTable(items);
+
+                if (dt.Rows.Count > 1)
+                {                                       
+                    int halfCount = dt.Rows.Count / 2;
+                    dtTopHalf = dt.AsEnumerable().Select(x => x).Take(halfCount).CopyToDataTable();
+                    dtBottomHalf = dt.AsEnumerable().Select(x => x).Skip(halfCount).CopyToDataTable();         
+                }
+                else
+                {
+                    dtTopHalf = dt;
+                }
                 repeater1.DataSource = new List<bool>() { true, false };
                 repeater1.DataBind();
-
 
             }
             catch (Exception ex)

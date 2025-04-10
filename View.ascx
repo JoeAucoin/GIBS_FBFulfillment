@@ -35,7 +35,13 @@
                  <asp:ListItem Value="3" Text="Order Filled"></asp:ListItem>
                 <asp:ListItem Value="4" Text="Order Filled-Text Sent"></asp:ListItem>
             </asp:DropDownList>
-        </div>		
+        </div>	
+                <div class="dnnFormItem">
+		<dnn:Label runat="server" ID="lblLocation" ControlName="ddlLocations" ResourceKey="lblLocation" />
+		<asp:DropDownList ID="ddlLocations" runat="server">
+            </asp:DropDownList>
+		</div>
+
     </fieldset>
 </div>	
 <div class="text-center">
@@ -116,7 +122,7 @@
 
     <ItemTemplate>
         <div class="col-md-6">
-            <asp:GridView ID="gvHalf" runat="server" AutoGenerateColumns="false" CssClass="table table-striped" Width="100%">
+            <asp:GridView ID="gvHalf" runat="server" AutoGenerateColumns="false" CssClass="table table-striped bigtext" Width="100%">
                 <Columns>
          
          <asp:BoundField HeaderText="Category" DataField="ProductCategory" Visible="true"></asp:BoundField>

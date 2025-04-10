@@ -134,9 +134,9 @@ namespace GIBS.Modules.GIBS_FBFulfillment.Data
 
         #region Public Methods
 
-        public override IDataReader GetOrdersByStatusCode(int orderStatusCode, string visitDate)
+        public override IDataReader GetOrdersByStatusCode(int orderStatusCode, string visitDate, string serviceLocation)
         {
-            return SqlHelper.ExecuteReader(ConnectionString, NamePrefix + "GetOrdersByStatusCode", orderStatusCode, visitDate);
+            return SqlHelper.ExecuteReader(ConnectionString, NamePrefix + "GetOrdersByStatusCode", orderStatusCode, visitDate, serviceLocation);
         }
 
         public override IDataReader GetOrderDetails(int visitID)
