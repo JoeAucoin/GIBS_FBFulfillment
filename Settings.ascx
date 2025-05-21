@@ -16,6 +16,14 @@
 				CssClass="NormalTextBox"></asp:dropdownlist>
         </div>	
 
+         <div class="dnnFormItem">
+             	<dnn:label id="lblServiceLocationDefault" runat="server" suffix=":" controlname="drpServiceLocationDefault" />
+<asp:dropdownlist id="drpServiceLocationDefault" Runat="server">
+    <asp:ListItem Text="This Locations" Value="Pantry"></asp:ListItem>
+    <asp:ListItem Text="All Locations" Value="0"></asp:ListItem>
+</asp:dropdownlist>
+             </div>
+
         <div class="dnnFormItem">
             <dnn:Label ID="lblTwilioAccountSid" runat="server" controlname="txtTwilioAccountSid" suffix=":" /> 
  

@@ -17,6 +17,23 @@ namespace GIBS.Modules.GIBS_FBFulfillment
     public class GIBS_FBFulfillmentModuleSettingsBase : ModuleSettingsBase
     {
 
+        public string ServiceLocationDefault
+        {
+            get
+            {
+                if (Settings.Contains("serviceLocationDefault"))
+                    return Settings["serviceLocationDefault"].ToString();
+                return "True";
+
+            }
+            set
+            {
+                var mc = new ModuleController();
+                mc.UpdateTabModuleSetting(this.TabModuleId, "serviceLocationDefault", value.ToString());
+            }
+
+        }
+
         public string ShowCategoryOnFulfillment
         {
             get

@@ -81,6 +81,10 @@ namespace GIBS.Modules.GIBS_FBFulfillment
                         cbxShowCategoryOnFulfillment.Checked = Convert.ToBoolean(ShowCategoryOnFulfillment.ToString());
                     }
 
+                    if (ServiceLocationDefault != null)
+                    {
+                        drpServiceLocationDefault.SelectedValue = ServiceLocationDefault;
+                    }
 
                     //Settings["SettingName"]
 
@@ -149,14 +153,8 @@ namespace GIBS.Modules.GIBS_FBFulfillment
                 TwilioPhoneNumber = txtTwilioPhoneNumber.Text.ToString();
                 ProcessOrderLayOut = ddlProcessOrderLayOut.SelectedValue.ToString();
                 FoodBankClientModuleID = drpModuleID.SelectedValue.ToString();
-                //the following are two sample Module Settings, using the text boxes that are commented out in the ASCX file.
-                //module settings
-                //modules.UpdateModuleSetting(ModuleId, "Setting1", txtSetting1.Text);
-                //modules.UpdateModuleSetting(ModuleId, "Setting2", txtSetting2.Text);
-
-                //tab module settings
-                //modules.UpdateTabModuleSetting(TabModuleId, "Setting1",  txtSetting1.Text);
-                //modules.UpdateTabModuleSetting(TabModuleId, "Setting2",  txtSetting2.Text);
+                ServiceLocationDefault = drpServiceLocationDefault.SelectedValue.ToString();
+                
             }
             catch (Exception exc) //Module failed to load
             {

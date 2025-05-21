@@ -139,7 +139,14 @@ namespace GIBS.Modules.GIBS_FBFulfillment
                 ddlLocations.DataBind();
                 ddlLocations.Items.Insert(0, new ListItem("All Locations", "0"));
                 ddlLocations.Items.Insert(1, new ListItem("This Location", "Pantry"));
-                ddlLocations.SelectedValue = "Pantry";
+
+                string serviceLocationDefault = "";
+                if (Settings.Contains("serviceLocationDefault"))
+                {
+                    serviceLocationDefault = Settings["serviceLocationDefault"].ToString();
+                }
+
+                ddlLocations.SelectedValue = serviceLocationDefault.ToString();
             }
             catch (Exception ex)
             {

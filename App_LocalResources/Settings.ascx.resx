@@ -129,6 +129,9 @@
   <data name="lblProcessOrderLayOut.Text" xml:space="preserve">
     <value>Process Order LayOut</value>
   </data>
+  <data name="lblServiceLocationDefault.Text" xml:space="preserve">
+    <value>Service Location Default</value>
+  </data>
   <data name="lblSetting1.Help" xml:space="preserve">
     <value>Put your value for Setting 1 here.</value>
   </data>

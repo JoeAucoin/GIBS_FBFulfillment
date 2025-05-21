@@ -51,6 +51,24 @@ namespace GIBS.Modules.GIBS_FBFulfillment
         protected global::System.Web.UI.WebControls.DropDownList drpModuleID;
 
         /// <summary>
+        /// lblServiceLocationDefault control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::DotNetNuke.UI.UserControls.LabelControl lblServiceLocationDefault;
+
+        /// <summary>
+        /// drpServiceLocationDefault control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList drpServiceLocationDefault;
+
+        /// <summary>
         /// lblTwilioAccountSid control.
         /// </summary>
         /// <remarks>
