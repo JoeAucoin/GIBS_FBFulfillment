@@ -10,6 +10,7 @@
 ' 
 */
 
+using DotNetNuke.Common.Lists;
 using DotNetNuke.Entities.Modules;
 using DotNetNuke.Services.Exceptions;
 using DotNetNuke.Services.Localization;
@@ -55,6 +56,7 @@ namespace GIBS.Modules.GIBS_FBFulfillment
                 if (Page.IsPostBack == false)
                 {
                     BindModules();
+                    FillLocationsDropdown();
 
                     //Check for existing settings and use those on this page
                     if (TwilioAccountSid != null)
@@ -105,6 +107,35 @@ namespace GIBS.Modules.GIBS_FBFulfillment
             }
         }
 
+
+        public void FillLocationsDropdown()
+        {
+
+            try
+            {
+                var MobileLocations = new ListController().GetListEntryInfoItems("ClientServiceLocation", "", this.PortalId);
+
+                drpServiceLocationDefault.DataTextField = "Text";
+                drpServiceLocationDefault.DataValueField = "Text";
+                drpServiceLocationDefault.DataSource = MobileLocations;
+                drpServiceLocationDefault.DataBind();
+                drpServiceLocationDefault.Items.Insert(0, new ListItem("All Locations", "0"));
+                drpServiceLocationDefault.Items.Insert(1, new ListItem("This Location", "Pantry"));
+
+                //string serviceLocationDefault = "";
+                //if (Settings.Contains("serviceLocationDefault"))
+                //{
+                //    serviceLocationDefault = Settings["serviceLocationDefault"].ToString();
+                //}
+
+                //drpServiceLocationDefault.SelectedValue = serviceLocationDefault.ToString();
+            }
+            catch (Exception ex)
+            {
+                Exceptions.ProcessModuleLoadException(this, ex);
+            }
+
+        }
 
         private void BindModules()
         {
